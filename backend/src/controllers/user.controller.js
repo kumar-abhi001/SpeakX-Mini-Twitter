@@ -1,11 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { user } from "../models/user.model.js";
-import tweet from "../models/tweet.model.js";
+import { Users } from "../models/user.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Tweets } from "../models/tweet.model.js";
 
 const registerUser = asyncHandler(async (req, res) => { 
     const { name, username, password } = req.body;
 
-    const userExist = await user.findOne({ username });
+    const userExist = await Users.findOne({ username });
 
     if (userExist) {
         return res.status(409).send({
@@ -14,21 +15,21 @@ const registerUser = asyncHandler(async (req, res) => {
         })
     }
 
-    const newUser = await user.create({
+    const newUser = await Users.create({
         name,
         username,
         password,
         refreshToken: "",
     })
 
-    const createdUser = await user.findById(newUser._id).select(
+    const createdUser = await Users.findById(newUser._id).select(
         "-password -refreshToken"
     )
 
     res.status(202)
         .send({
         statusCode: 202,
-        message: "user is created successfully",
+        message: "Users is created successfully",
         data: createdUser
     });
 });
@@ -36,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { username, password } = req.body;
 
-    const userExist = await user.findOne({ username });
+    const userExist = await Users.findOne({ username });
     if(!userExist) {
         return res.status(404).send({
             message: "User not found",
@@ -62,7 +63,7 @@ const loginUser = asyncHandler(async (req, res) => {
         secure: true,
     }
 
-    const userData = await user.findById(userExist._id).select("-password -refreshToken");
+    const userData = await Users.findById(userExist._id).select("-password -refreshToken");
 
     res.status(200)
         .cookie("accessToken", accessToken, option)
@@ -75,7 +76,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const User = await user.findById(req.User?._id);
+    const User = await Users.findById(req.User?._id);
     User.refreshToken = "";
   const option = {
     httpOnly: true,
@@ -89,7 +90,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const getAllTweets = asyncHandler(async (req, res) => {
-    const tweets = await tweet.find().populate("user", "-password -refreshToken");
+    const tweets = await Tweets.find().populate("Users", "-password -refreshToken");
     res.status(200).send({
         statusCode: 200,
         message: "All tweets",
@@ -98,14 +99,84 @@ const getAllTweets = asyncHandler(async (req, res) => {
 });
 
 const createTweet = asyncHandler(async (req, res) => {
-    const { content, media } = req.body;
+    const { content } = req.body;
+    console.log(content);
+    const mediaUrl = await uploadOnCloudinary(req.file.path);
+    if (!mediaUrl) {
+        return res.status(500).send({
+            message: "Cannot upload media file",
+            statusCode: 500
+        });
+    }
+
+    
+    const newTweet = await Tweets.create({
+        content,
+        media: mediaUrl,
+        userId: req.user._id
+    });
+
+    res.status(201).send({
+        statusCode: 201,
+        message: "Tweet is created successfully",
+        data: newTweet
+    });
 });
 
-const editTweet = asyncHandler(async (req, res) => { });
+const editTweet = asyncHandler(async (req, res) => {
+    const { tweetId, content } = req.body;
+    const newUrl = await uploadOnCloudinary(req.file.path);
+    if (!newUrl) {
+        return res.status(500).send({
+            message: "Unable to upload new media file",
+            statusCode: 500
+        });
+    }
 
-const deleteTweet = asyncHandler(async (req, res) => { });
+    const updatedTweet = await Tweets.findByIdAndUpdate(tweetId, {
+        content,
+        media: newUrl
+    });
+    
+    if (!updatedTweet) {
+        return res.status(404).send({
+            message: "Tweet is not found/updated",
+            statusCode: 404
+        });
+    }
 
-const myTweets = asyncHandler(async (req, res) => { });
+    res.status(200).send({
+        message: "Tweet is updated sucessfully",
+        statusCode: 200,
+        updatedTweet: updatedTweet
+    });
+});
+
+const deleteTweet = asyncHandler(async (req, res) => {
+    const { tweetId } = req.body;
+    const deletedTweet = await Tweets.findByIdAndDelete(tweetId);
+    if (!deletedTweet) {
+        return res.status(404).send({
+            message: "Tweet not found",
+            statusCode: 404
+        });
+    }
+
+    res.status(200).send({
+        statusCode: 200,
+        message: "Tweet is deleted successfully",
+        data: deletedTweet
+    });
+});
+
+const myTweets = asyncHandler(async (req, res) => {
+    const myTweets = await Tweets.find({ userId: req.user._id }).populate("userId", "-password -refreshToken");
+    res.status(200).send({
+        statusCode: 200,
+        message: "My tweets",
+        data: myTweets
+    });
+});
 
 const followUser = asyncHandler(async (req, res) => { });
 

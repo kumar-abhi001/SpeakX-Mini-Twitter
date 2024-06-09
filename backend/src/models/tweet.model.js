@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const tweetSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: "user"
+        ref: 'Users'
     },
     content: {
         type: String
@@ -17,4 +17,4 @@ const tweetSchema = new Schema({
     }
 );
 
-export const tweet = mongoose.model("tweet", tweetSchema);
+export const Tweets = mongoose.model("Tweets", tweetSchema);

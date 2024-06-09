@@ -3,11 +3,11 @@ import mongoose, { Schema } from "mongoose";
 const followSchema = new Schema({
     followerId: {
         type: Schema.Types.ObjectId,
-        ref: "user"
+        ref: "Users"
     },
     followingId: {
         type: Schema.Types.ObjectId,
-        ref: "user"
+        ref: "Users"
     }
 },
     {
@@ -16,4 +16,4 @@ const followSchema = new Schema({
 );
 
 
-export const follow = mongoose.model("follow", followSchema);
+export const Follows = mongoose.model("Follows", followSchema);
