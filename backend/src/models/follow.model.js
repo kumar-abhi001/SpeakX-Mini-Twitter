@@ -5,7 +5,6 @@ const followSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "user"
     },
-
     followingId: {
         type: Schema.Types.ObjectId,
         ref: "user"
