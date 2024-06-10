@@ -10,3 +10,10 @@
   CLOUD_NAME= cloudinary cloud_name
   CLOUD_API_KEY= cloudinary
   CLOUD_API_SCRET=cloudinar (your details)
+
+2. Change the cors origin policy in the backend\n
+3. npm install
+3. npm start
+4. Change the backend url in constant.js file (frontend)
+5. npm install
+6. npm run dev
