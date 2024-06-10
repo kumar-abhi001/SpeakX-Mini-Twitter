@@ -10,6 +10,9 @@ const tweetSchema = new Schema({
     },
     media: {
         type: String
+    },
+    mediaType: {
+        type: String
     }
 },
     {

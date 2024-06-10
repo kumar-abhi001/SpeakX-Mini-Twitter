@@ -121,10 +121,11 @@ const createTweet = asyncHandler(async (req, res) => {
     
     const newTweet = await Tweets.create({
         content,
-        media: mediaUrl,
-        userId: req.user._id
+        media: mediaUrl?.url,
+        userId: req.user._id,
+        mediaType: mediaUrl?.resource_type
     });
-
+    console.log("new tweet", mediaUrl);
     res.status(201).send({
         statusCode: 201,
         message: "Tweet is created successfully",
@@ -165,6 +166,8 @@ const editTweet = asyncHandler(async (req, res) => {
 const deleteTweet = asyncHandler(async (req, res) => {
     const { tweetId } = req.body;
     const deletedTweet = await Tweets.findByIdAndDelete(tweetId);
+    console.log(tweetId);
+    console.log("Deleted Tweet", deletedTweet);
     if (!deletedTweet) {
         return res.status(404).send({
             message: "Tweet not found",
@@ -189,6 +192,17 @@ const myTweets = asyncHandler(async (req, res) => {
 });
 
 // need to implement what if already following and whether the followingId exists or not
+const getAllUsers = asyncHandler(async (req, res) => { 
+    const userExceptIFollow = await Follows.find({ followerId: req.user._id }).select("followingId");
+    const followingIds = userExceptIFollow.map((item) => item.followingId);
+    const users = await Users.find({ _id: { $nin: followingIds } }).select("-password -refreshToken");
+    
+    res.status(200).send({
+        statusCode: 200,
+        message: "All user details",
+        data: users
+    });
+});
 const followUser = asyncHandler(async (req, res) => {
     const { followingId } = req.body;
     const followerId = req.user._id.toString();
@@ -278,5 +292,6 @@ export {
     unfollowUser,
     accountDetail,
     getFollowerTweets,
-    validateUser
+    validateUser,
+    getAllUsers
 }
