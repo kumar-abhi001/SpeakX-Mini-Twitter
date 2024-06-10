@@ -13,13 +13,19 @@ function Home() {
               <div>
                 <h1 className="text-4xl">Mini-Twitter</h1>
               </div>
-              <div className=" w-80 ">
-                <div className="flex justify-between w-80">
+              <div className=" w-96">
+                <div className="flex justify-between">
                   <Link
                     to="/home/tweet"
                     className="focus:underline focus:outline-none"
                   >
                     Home
+                  </Link>
+                  <Link
+                    to="follow"
+                    className="focus:underline focus:outline-none"
+                  >
+                    Follow
                   </Link>
                   <Link
                     to="createtweet"

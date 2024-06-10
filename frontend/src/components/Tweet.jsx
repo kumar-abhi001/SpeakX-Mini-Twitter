@@ -15,7 +15,6 @@ const Tweet = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
                 setTweets(data.data)
             })
             .catch((error) => {
@@ -25,6 +24,7 @@ const Tweet = () => {
     }, [])
     return (
         <>
+            <h1 className=" text-2xl">TWEETS</h1>
             {tweets.map((data) => {
                 return <SingleTweet data={data} key={data._id} />
             })}

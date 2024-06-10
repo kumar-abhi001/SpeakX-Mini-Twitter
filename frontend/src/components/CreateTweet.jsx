@@ -20,7 +20,12 @@ const CreateTweet = () => {
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
+              console.log(data);
+              alert(data.message);
+              if (data.statusCode === 201) {
+                  setContent("");
+                  setMedia("");
+              }
           });
     }
     return (
