@@ -1,44 +1,63 @@
 import { useNavigate } from "react-router";
 import apiurl from "../constant";
+import { Outlet } from "react-router";
+import { Link } from "react-router-dom";
+
 function Home() {
     const navigate = useNavigate();
     return (
       <>
-        <div className="main div">
-          <div className=" border-2 p-2 border-red-700 flex justify-between">
-            <div>
-              <h1 className="text-4xl">Mini-Twitter</h1>
-            </div>
-            <div className=" w-80 ">
-              <div className="flex justify-between w-80">
-                <button className=" focus:underline focus:outline-none"
-                    onClick={() => navigate("/")}    
-                >
-                  Home
-                </button>
-                <button className="focus:underline focus:outline-none "
-                    onClick={() => navigate("/mytweet")}
-                >
-                  My Tweets
-                </button>
-                <button 
-                  onClick={() => {
-                    fetch(`${apiurl}/api/user/logout`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      credentials: "include",
-                    })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data.message))
-                      .catch((error) => console.log(error));
-  
-                    }}
-                    className="focus:underline focus:outline-none ">
-                  Logout
-                </button>
+        <div className="grid grid-cols-12 p-2">
+          <div className="col-span-6 col-start-4 border-2 flex  flex-col justify-center items-center">
+            <div className="border-b-2 p-2 border-black-700 flex justify-between w-full">
+              <div>
+                <h1 className="text-4xl">Mini-Twitter</h1>
               </div>
+              <div className=" w-80 ">
+                <div className="flex justify-between w-80">
+                  <Link
+                    to="/home/tweet"
+                    className="focus:underline focus:outline-none"
+                  >
+                    Home
+                  </Link>
+                  <Link
+                    to="createtweet"
+                    className="focus:underline focus:outline-none"
+                  >
+                    Create Tweet
+                  </Link>
+                  <Link
+                    to="mytweet"
+                    className="focus:underline focus:outline-none"
+                  >
+                    My Tweets
+                  </Link>
+                  <button
+                    onClick={() => {
+                      fetch(`${apiurl}/api/user/logout`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        credentials: "include",
+                      })
+                        .then((response) => response.json())
+                        .then((data) => {
+                          alert(data.message);
+                          navigate("/");
+                        })
+                        .catch((error) => console.log(error));
+                    }}
+                    className="focus:underline focus:outline-none "
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 w-full flx">
+              <Outlet />
             </div>
           </div>
         </div>
