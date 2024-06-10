@@ -6,7 +6,7 @@ import cookieParser from "cookie-parser";
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: "https://mini-twitter-murex.vercel.app/",
+    origin: "https://mini-twitter-murex.vercel.app",
     credentials: true
 }));
 app.use(cookieParser());
