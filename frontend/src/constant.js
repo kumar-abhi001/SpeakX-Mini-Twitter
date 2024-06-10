@@ -1,3 +1,3 @@
-const apiurl = "http://localhost:3000";
+const apiurl = "https://speakx-mini-twitter-backend.onrender.com";
 
 export default apiurl;
