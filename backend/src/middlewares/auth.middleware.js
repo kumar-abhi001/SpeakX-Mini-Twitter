@@ -8,14 +8,14 @@ const verifyJWT = async (req, res, next) => {
             return res.status(401).send({
                 message: "Unauthorized Access",
                 status: 401,
-                data: ""
+                data: "",
+                valid: false
             })
         }
         const decodedToken = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         if (!decodedToken) {
             return res.status(401).send({ message: "Unauthorized Access" });
         }
-
         const user = await Users.findById(decodedToken._id).select("-refreshToken -password");
         req.user = user;
         next();

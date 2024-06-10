@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Users } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Tweets } from "../models/tweet.model.js";
+import { Follows } from "../models/follow.model.js";
 
 const registerUser = asyncHandler(async (req, res) => { 
     const { name, username, password } = req.body;
@@ -76,8 +77,10 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const User = await Users.findById(req.User?._id);
+    
+    const User = await Users.findById(req.user?._id).select("-password");
     User.refreshToken = "";
+    User.save();
   const option = {
     httpOnly: true,
     secure: true,
@@ -87,6 +90,11 @@ const logoutUser = asyncHandler(async (req, res) => {
     .clearCookie("refreshToken", option)
     .clearCookie("accessToken", option)
     .send({statusCode: 200, message: "User is logged out successfully"});
+});
+
+const validateUser = asyncHandler(async (req, res) => { 
+    res.status(202)
+        .send({ message: "User is authenticated", valide: true });
 });
 
 const getAllTweets = asyncHandler(async (req, res) => {
@@ -100,15 +108,16 @@ const getAllTweets = asyncHandler(async (req, res) => {
 
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
-    console.log(content);
-    const mediaUrl = await uploadOnCloudinary(req.file.path);
-    if (!mediaUrl) {
-        return res.status(500).send({
-            message: "Cannot upload media file",
-            statusCode: 500
-        });
+    let mediaUrl = "";
+    if (req.file?.path) {
+        mediaUrl = await uploadOnCloudinary(req.file?.path);
+        if (!mediaUrl) {
+            return res.status(500).send({
+                message: "Cannot upload media file",
+                statusCode: 500
+            });
+        }
     }
-
     
     const newTweet = await Tweets.create({
         content,
@@ -133,11 +142,12 @@ const editTweet = asyncHandler(async (req, res) => {
         });
     }
 
-    const updatedTweet = await Tweets.findByIdAndUpdate(tweetId, {
+    await Tweets.findByIdAndUpdate(tweetId, {
         content,
         media: newUrl
     });
     
+    const updatedTweet = await Tweets.findById(tweetId);
     if (!updatedTweet) {
         return res.status(404).send({
             message: "Tweet is not found/updated",
@@ -178,9 +188,83 @@ const myTweets = asyncHandler(async (req, res) => {
     });
 });
 
-const followUser = asyncHandler(async (req, res) => { });
+// need to implement what if already following and whether the followingId exists or not
+const followUser = asyncHandler(async (req, res) => {
+    const { followingId } = req.body;
+    const followerId = req.user._id.toString();
+    console.log("User deatails form auth", followerId);
 
-const unfollowUser = asyncHandler(async (req, res) => { });
+    // const followExist = await Follows.findOne({ followingId});
+    
+    // if(followExist) {
+    //     return res.status(409).send({
+    //         message: "Already following",
+    //         statusCode: 409
+    //     });
+    // }
+    const newFollow = await Follows.create({
+        followerId,
+        followingId
+    });
+
+    res.status(201).send({
+        statusCode: 201,
+        message: "Followed successfully",
+        data: newFollow
+    });
+});
+
+const unfollowUser = asyncHandler(async (req, res) => {
+    const { followingId } = req.body;
+
+    const isFollowing = await Follows.findOne({ followingId });
+    if(!isFollowing) {
+        return res.status(404).send({
+            message: " Your are Not following the user",
+            statusCode: 404
+        });
+    }
+
+    await Follows.findOneAndDelete({ followingId });
+    res.status(200).send({
+        statusCode: 200,
+        message: "You have unfollowed the user successfully"
+    });
+});
+
+const accountDetail = asyncHandler(async (req, res) => {
+    const userId = req.user._id.toString();
+    const followerCount = await Follows.find({ followingId: userId }).countDocuments();
+    const followingCount = await Follows.find({ followerId: userId }).countDocuments();
+    const tweetCount = await Tweets.find({ userId }).countDocuments();
+    
+    const useDetails = await Users.findById(userId).select("-password -refreshToken");
+
+    res.status(200)
+        .send({
+            statusCode: 200,
+            message: "User details",
+            data: {
+                followerCount,
+                followingCount,
+                tweetCount,
+                useDetails
+            }
+        })
+})
+
+const getFollowerTweets = asyncHandler(async (req, res) => { 
+    const userId = req.user._id.toString();
+    const followingIds = await Follows.find({ followerId: userId }).select("followingId");
+    const followingId = followingIds.map((item) => item.followingId);
+
+    const tweets = await Tweets.find({ userId: { $in: followingId } }).populate("userId", "-password -refreshToken");
+    res.status(200).send({
+        statusCode: 200,
+        message: "Follower tweets",
+        data: tweets
+    });
+});
 export {
     registerUser,
     loginUser,
@@ -191,5 +275,8 @@ export {
     deleteTweet,
     myTweets,
     followUser,
-    unfollowUser
+    unfollowUser,
+    accountDetail,
+    getFollowerTweets,
+    validateUser
 }
