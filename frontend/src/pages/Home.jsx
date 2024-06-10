@@ -21,12 +21,12 @@ function Home() {
                   >
                     Home
                   </Link>
-                  <Link
+                  {/* <Link
                     to="follow"
                     className="focus:underline focus:outline-none"
                   >
                     Follow
-                  </Link>
+                  </Link> */}
                   <Link
                     to="createtweet"
                     className="focus:underline focus:outline-none"

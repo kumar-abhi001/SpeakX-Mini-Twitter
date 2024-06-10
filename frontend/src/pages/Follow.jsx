@@ -3,7 +3,8 @@ import apiurl from "../constant";
 import User from "../components/User";
 
 const Follow = () => {
-    const [userList, setUserList] = useState([]);
+  const [userList, setUserList] = useState([]);
+  const [followingUsers, setFollowingUsers] = useState([]);
     useEffect(() => { 
         fetch(`${apiurl}/api/user/allUser`, {
             method: "GET",
@@ -11,14 +12,22 @@ const Follow = () => {
         })
           .then((response) => response.json())
           .then((data) => {
-            setUserList(data.data);
+            setUserList(data.data?.users);
+            setFollowingUsers(data.data?.followingUser);
           });
     }, [])
     return (
       <div>
-        {userList.map((data) => (
-          <User data={data} key={data._id}/>
-        ))}
+        <div>{
+          followingUsers.map((data) => (
+            <User data={data} isFollow="Following" key={data._id} />
+          ))
+        }</div>
+        <div>
+          {userList.map((data) => (
+            <User data={data} isFollow="Follow" key={data._id} />
+          ))}
+        </div>
       </div>
     );
 }

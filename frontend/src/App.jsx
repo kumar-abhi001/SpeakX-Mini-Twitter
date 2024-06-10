@@ -5,9 +5,9 @@ import SigupPage from "./pages/SigupPage";
 import { useNavigate } from "react-router-dom";
 import Mytweet from "./components/Mytweet";
 import Tweet from "./components/Tweet";
-import apiurl from "./constant";
 import CreateTweet from "./components/CreateTweet";
 import Follow from "./pages/Follow";
+
 function App() {
   return (
     <BrowserRouter>

@@ -135,13 +135,7 @@ const createTweet = asyncHandler(async (req, res) => {
 
 const editTweet = asyncHandler(async (req, res) => {
     const { tweetId, content } = req.body;
-    const newUrl = await uploadOnCloudinary(req.file.path);
-    if (!newUrl) {
-        return res.status(500).send({
-            message: "Unable to upload new media file",
-            statusCode: 500
-        });
-    }
+    const newUrl = await uploadOnCloudinary(req.file?.path);
 
     await Tweets.findByIdAndUpdate(tweetId, {
         content,
@@ -193,14 +187,13 @@ const myTweets = asyncHandler(async (req, res) => {
 
 // need to implement what if already following and whether the followingId exists or not
 const getAllUsers = asyncHandler(async (req, res) => { 
-    const userExceptIFollow = await Follows.find({ followerId: req.user._id }).select("followingId");
-    const followingIds = userExceptIFollow.map((item) => item.followingId);
-    const users = await Users.find({ _id: { $nin: followingIds } }).select("-password -refreshToken");
-    
+    const followingUser = await Follows.find({ followerId: req.user._id }).select("followingId _id").populate("followingId", "username");
+    const users = await Users.find({_id: { $ne: req.user._id }}).select("username")
+
     res.status(200).send({
         statusCode: 200,
         message: "All user details",
-        data: users
+        data: {users, followingUser}
     });
 });
 const followUser = asyncHandler(async (req, res) => {
